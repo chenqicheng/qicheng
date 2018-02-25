@@ -1,0 +1,47 @@
+sysctl vm.overcommit_memory=1
+
+内核参数overcommit_memory 
+它是 内存分配策略
+可选值：0、1、2。
+0， 表示内核将检查是否有足够的可用内存供应用进程使用；如果有足够的可用内存，内存申请允许；否则，内存申请失败，并把错误返回给应用进程。
+1， 表示内核允许分配所有的物理内存，而不管当前的内存状态如何。
+2， 表示内核允许分配超过所有物理内存和交换空间总和的内存
+
+https://zhuanlan.zhihu.com/p/24669209
+4个好用的php数组
+
+一 ：  array_filter()
+$result = array_filter($data,function($item){
+ return $item['xx']= 'xxx';
+})
+声明性编程”或者也称为“表达式编程” 
+$data 二维数组 ；
+利用了sql思想  相当于select * from table where xx=xxx
+
+二：    array_map（）
+$result = array_map(function($item){
+    return array(
+        'id' => $item['id'],
+        'name'=> $item['name'],
+        'gender' => $item['sex'] == '2'?'女':'男'
+    );
+},$data);
+相当于重新成成一个数组
+相当于select id，name case sex  when ‘2’ then ‘女’ else '男'  end as gender  from table
+
+三 ：  array_walk()
+ rray_walk是for或foreach语句的替代函数  
+...... 若果只需要遍历出来 建议使用  如果还需要遍历中加上其他操作  建议还是 foreach ......
+array_walk($data,function($item){
+echo $item['id'];
+})
+相当于 select xx或者* from table ；
+
+四    array_reduce()
+array_reduce($data,function($curr,$item){
+  return  $curr['age']<$item['age']?$item:$curr
+},array('age'=>0));
+取得 age 最大的那组数组；
+还可以求和  ；
+
+
