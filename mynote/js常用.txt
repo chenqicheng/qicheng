@@ -1,0 +1,36 @@
+var d = new Date()
+document.write (d.toLocaleString())  //根据本地时间把具体的日期转换为字符串
+
+2018/1/16 上午11:48:33
+
+
+
+localStorage.setItem("share_need",'1');//设置localstorage
+
+localStorage.getItem('share_need');//获取localstorage
+
+localStorage.removeItem('share_need');//清除该localstorage
+
+localStorage.clear();
+
+
+//监听浏览器返回键 可用于微信
+    pushHistory();
+    function pushHistory() {
+        var state = {
+            title: "title",
+            url: "#"
+        };
+        window.history.pushState(state, "title", "#");
+    }
+    if (typeof window.addEventListener != "undefined") {
+        window.addEventListener("popstate", function (e) {
+//            WeixinJSBridge.call('closeWindow');
+            location.href='__CONTROLLER__/second/id/{$parent_id}.html'
+        }, false);
+    } else {
+        window.attachEvent("popstate", function (e) {
+//            WeixinJSBridge.call('closeWindow');
+            location.href='__CONTROLLER__/second/id/{$parent_id}.html'
+        });
+    }

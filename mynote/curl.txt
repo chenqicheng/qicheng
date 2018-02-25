@@ -1,0 +1,65 @@
+﻿1、初始化：curl_init()
+2、设置属性值：curl_setopt()
+3、执行：curl_exec()
+4、退出关闭：curl_close()
+
+
+1 Get方式实现
+
+　　//初始化
+　　$ch = curl_init();
+　　//设置选项，包括URL
+　　curl_setopt($ch, CURLOPT_URL, "http://www.jb51.net");
+　　curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);   1:如果成功只将结果返回，不自动输出任何内容。如果失败返回FALSE 
+　　												0:如果成功只返回TRUE，自动输出返回的内容。如果失败返回FALSE
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+
+　　//执行并获取HTML文档内容
+　　$output = curl_exec($ch);
+
+　　//释放curl句柄
+　　curl_close($ch);
+
+　　//打印获得的数据
+　　print_r($output);
+
+
+Post方式实现
+
+   public function aaa(){
+       $name=$_POST['name'];
+       $age = $_POST['age'];
+       if(empty($name) || empty($age)){
+           echo  'post value is empty';
+           exit();
+       }
+       echo 'name is=>'.$name.'<br>'.'age is=>'.$age;
+
+    }
+
+    //CURL模拟POST请求
+    public function curltest(){
+        $url = "http://localhost/caisuikx/admin.php/Curltest/aaa";
+        $post_data = 'name=chen&age=999';
+//        $post_data=['name'=>'谌','age'=>'23'];
+// 创建一个新cURL资源
+        $ch = curl_init();
+// 设置URL和相应的选项
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//        curl_setopt($ch,CURLOPT_HEADER,0);  //设置头信息
+        // post数据
+        curl_setopt($ch, CURLOPT_POST, 1);
+//    // post的变量
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+// 抓取URL并把它传递给浏览器
+        $output=curl_exec($ch);
+        if($output === false){
+            echo '错误'.curl_errno($ch);
+            exit();
+        }
+//关闭cURL资源，并且释放系统资源
+        curl_close($ch);
+        //打印获得的数据
+        print_r($output);
+    }

@@ -1,0 +1,43 @@
+    //短信接口
+    public function duanxin($mobile, $content)
+    {
+        //发送短信方法
+        $url = "http://service.winic.org:8009/sys_port/gateway/index.asp?";
+        $data = "id=%s&pwd=%s&to=%s&Content=%s&time=";
+        $id = urlencode(iconv("utf-8", "gb2312", "huanghaoliang"));//账号：huanghaoliang
+        $pwd = 'x809809';//密码x809809
+        $to = $mobile;
+        $content = urlencode(iconv("UTF-8", "GB2312", $content));
+        $rdata = sprintf($data, $id, $pwd, $to, $content);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $rdata);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+
+    //发送短信
+    function sendInfo(){
+        $mobile=I('post.tel');
+        $code=rand(100000,999999);
+        session('code',$code,300);  //设置session
+        $content = "您的验证码为:" . $code . "【爱兼职】";
+        $this->duanxin($mobile, $content);
+    }
+
+    //手动输入手机号登录
+    function telLogin(){
+        $code = session('code');
+        $yzm=I('post.yzm');//手动输入的验证码
+        if($code==$yzm){
+            $this->ajaxReturn(1);
+            session('code',null);
+        }else{
+            $this->ajaxReturn(0);
+            session('code',null);
+        }
+
+    }

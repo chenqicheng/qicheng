@@ -1,0 +1,129 @@
+http://blog.csdn.net/kesjc2017/article/details/76650845
+
+Centos7.3_64位安装Apache2.4_mysql5.7_php5.4(阿里云LAMP环境搭建图文教程)
+一、Apache
+Centos7默认已经安装httpd服务，只是没有启动。
+如果你需要全新安装apache，可以yum install -y httpd
+启动服务：systemctl start httpd.service
+服务查看：chkconfig --list
+设置开机自动启动：systemctl enable httpd.service
+端口查看： netstat -ntlp
+测试Apache
+安装完成Apache后，我们可以使用http://你的服务器ip/测试访问Apache，如果能显示如下图，则说明Apache已经安装成功。
+测试：http://47.52.21.163/
+ 
+修改Apache默认网站路径
+Apache安装好后，默认的网站路径是/var/www/html，也就是说以后我们想部署网站的话，必须把文件放到这个目录下，例如我们下面测试一下。
+echo "你好，测试Apache 首页 By Drmeng 2017.7.25" > /var/www/html/index.html
+上面这个命令是在/var/www/html下面创建一个index.html文件，内容是"你好，测试Apache 首页 By Drmeng 2017.7.25"，此时我们刷新浏览器，访问我们的Apache网站应该可以看到页面。
+ 
+Apache安装好后配置文件在哪里吗？没错，就是/etc/httpd/conf/httpd.conf，下面我们用vi或者vim(vim命令编辑文件可以带彩色，容易区分一点)命令来编辑它。
+vim /etc/httpd/conf/httpd.conf
+打开文件后，我们输入/docu，然后按下回车，这样就可以快速搜索到我们要找到内容。如下图，可以看到有两个/var/www/html的地方，分别是DocumentRoot "/var/www/html"和<Directory "/var/www/html">。我们要修改的就是这两个地方，把/var/www/html修改成我们想要的路径，比如/home/www，那么修改后就是这样的。
+ 
+重启Apache服务了
+[root@iZj6c6r59dfzz11wmsqiinZ ~]# systemctl stop httpd
+[root@iZj6c6r59dfzz11wmsqiinZ ~]# systemctl start httpd
+[root@iZj6c6r59dfzz11wmsqiinZ ~]# systemctl restart httpd
+ 
+ 
+二、安装PHP5
+yum -y install php
+安装完成后，我们的php配置文件路径是：/etc/php.ini
+安装完PHP后，一定要重起apache服务，PHP才能生效！
+重启apache让php生效： systemctl restart httpd.service/systemctl restart httpd
+测试PHP环境
+下面我们来测试一下php环境，刚刚我们已经安装了php了，那么正常情况下我们可以不用修改php的配置。下面我们试试创建一个php页面。
+echo "<?php echo "第一个PHP测试页面"; phpinfo(); ?>" > /var/www/html/index.php
+在浏览器中访问http://你的ip/index.php后可以看到如下效果则说明php安装成功。
+http://47.52.21.163/index.php
+ 
+ 
+三、安装mysql
+本服务器是以安装mysql5.7为例
+1.mysql安装准备：
+CentOS7的yum源中默认是没有mysql的。为了解决这个问题，我们要先下载mysql的repo源。
+(1).下载 mysql的repo
+# wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+(2)安装mysql源安装包
+# rpm -ivh mysql57-community-release-el7-11.noarch.rpm
+安装这个包后，会获得两个mysql的yum repo源：/etc/yum.repos.d/mysql-community.repo，/etc/yum.repos.d/mysql-community-source.repo。
+2.安装Mysql
+yum -y install mysql-community-server
+3.启动Mysql服务
+systemctl start mysqld
+4.设置开机启动
+[root@localhost ~]# systemctl enable mysqld
+[root@localhost ~]# systemctl daemon-reload
+[root@localhost ~]# chkconfig --list
+5.修改mysql root本地登录密码
+mysql安装完成之后，在/var/log/mysqld.log文件中给root生成了一个临时的默认密码。
+[root@localhost ~]# more /var/log/mysqld.log
+ 
+临时密码：in1N=ERmABRb
+ 
+登陆mysql并修改密码：mysql -u root -pin1N=ERmABRb
+ 
+$ mysql -u root -pin1N=ERmABRb
+ 
+输入临时密码 进入mysql命令行；
+mysql>ALTER USER 'root'@'localhost' IDENTIFIED BY 'Sws2017.cn';
+Query OK, 0 rows affected (0.00 sec)
+ 
+修改密码为 Siweisen2017.cn    (备注 mysql5.7默认密码策略要求密码必须是大小写字母数字特殊字母的组合，至少8位)
+ 
+ 
+6.设置允许远程登录
+ 
+Mysql默认不允许远程登录，我们需要设置下，并且防火墙开放3306端口；
+ 
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Sweisen2017.cn' WITH GRANT OPTION;
+ 
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+ 
+mysql> exit;
+ 
+Bye
+ 
+退出下；
+ 
+[root@localhost ~]# firewall-cmd --zone=public --add-port=3306/tcp --permanent
+ 
+success
+ 
+[root@localhost ~]# firewall-cmd --reload
+ 
+success
+ 
+其它防火墙命令参考：
+[root@localhost ~]# systemctl start firewalld  ##启动Firewall
+[root@localhost ~]# systemctl enable firewalld.service  ##设置开机自启动
+ln -s '/usr/lib/systemd/system/firewalld.service' '/etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service'
+ 
+ln -s '/usr/lib/systemd/system/firewalld.service' '/etc/systemd/system/basic.target.wants/firewalld.service'
+[root@localhost ~]# firewall-cmd --state
+running
+ 
+[root@localhost ~]# firewall-cmd --zone=public --add-port=3306/tcp --permanent
+success
+[root@localhost ~]# firewall-cmd --reload
+success
+[root@iZj6c6r59dfzz11wmsqiinZ ~]# iptables -L -n
+ 
+参考：http://www.fzmajiang.com
+ 
+四、最后安装php,php-fpm以及php扩展：
+yum install php php-fpm php-bcmatch php-gd php-mbstring php-mcrypt php-mysql 
+systemctl restart httpd.service
+ps -ef|grep httpd
+这样就把php和mysql完全整合了。
+ 
+ 
+五、阿里云服务器安全配置，开放3306端口，允许远程连接
+如果是阿里云服务器：设置安全组配置
+ 
+添加一个3306授权，即可
+ 远程成功连接Mysql  测试连接成功效果切图
+
+ 
+到此整个Centos7.3_64+Apache2.4_mysql5.7_php5.4环境安装就全部完成并成功了！

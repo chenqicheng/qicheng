@@ -1,0 +1,49 @@
+    //登录接口获取用户信息
+    function getUserInfo(){
+        $appid=C("appid");
+        $secret=C("appsecret");
+        $js_code=I("post.js_code");
+        $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$js_code."&grant_type=authorization_code";
+        $res=file_get_contents($url);
+        $res=json_decode($res);
+        $this->ajaxReturn($res);
+    }
+
+
+    //网红注册二维码生成
+    function wanghongzhuce(){
+        header("Content-Type: text/html;charset=utf-8");
+        $url = "https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=";
+        $access_token = M("xcxinfo")->where("id=1")->getField("access_token");
+        $url=$url.$access_token;
+        $path="pages/register/register";
+        $width=430;
+        $post_data='{"path":"'.$path.'","width":'.$width.'}';
+        $res = $this->api_notice_increment($url,$post_data);
+        $filepath="./Public/wximg/whewm/"."whzhuce".".jpg";
+        file_put_contents($filepath, $res);
+    }
+
+    function api_notice_increment($url, $data){
+        $ch = curl_init();
+        $header = "Accept-Charset: utf-8";
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($url, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01; Windows NT 5.0)');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $tmpInfo = curl_exec($ch);
+        //     var_dump($tmpInfo);
+        //    exit;
+        if (curl_errno($ch)) {
+            return false;
+        }else{
+            // var_dump($tmpInfo);
+            return $tmpInfo;
+        }
+    }

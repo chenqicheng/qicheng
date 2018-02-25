@@ -1,0 +1,32 @@
+//关闭iframe后刷新父页面
+var index = parent.layer.getFrameIndex(window.name);
+parent.layer.close(index);
+alert('修改成功');
+window.parent.location.reload();
+
+
+    $(".upd").on('click',function(){
+        var id=$(this).attr('pid');//试卷id
+        layer.open({
+            type: 2,
+            title: '试卷管理_修改试卷',
+            maxmin: true,
+            shadeClose: true, //点击遮罩关闭层
+            skin: 'layui-layer-rim', //加上边框
+            area : ['500px' , '400px'],
+            content: '__CONTROLLER__/updTestPaper?id='+id
+        });
+    })
+
+
+layer.msg('删除成功', {icon: 1,time:500},function(){
+                            location.reload();
+                        });
+
+
+加载框：
+                    var index = layer.load(1, {
+                        shade: [0.1,'#fff'] //0.1透明度的白色背景
+                    }); 
+ 	
+layer.closeAll("loading");		

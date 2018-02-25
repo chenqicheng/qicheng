@@ -1,0 +1,84 @@
+    function studentLoginInfo(){
+        $name=I('post.name');
+//        dump($name);
+        $count=M('jianli')->where("name LIKE '%$name%'")->count();
+        $Page= new \Think\Page($count,20);// 实例化分页类 传入总记录数和每页显示的记录数(2)
+        $Page->setConfig('header', '<li class="rows">共<b>%TOTAL_ROW%</b>条记录&nbsp;第<b>%NOW_PAGE%</b>页/共<b>%TOTAL_PAGE%</b>页</li>');
+        $Page->setConfig('prev', '上一页');
+        $Page->setConfig('next', '下一页');
+        $Page->setConfig('last', '末页');
+        $Page->setConfig('first', '首页');
+        $Page->setConfig('theme', '%FIRST%%UP_PAGE%%LINK_PAGE%%DOWN_PAGE%%END%%HEADER%');
+        $Page->lastSuffix = false;//最后一页不显示为总页数
+        $show= $Page->show();// 分页显示输出
+        $list = M('jianli')->field('id,name,tel,yue,xinyong,addtime,status')->where("name LIKE '%$name%'")->order('id desc')->limit($Page->firstRow.','.$Page->listRows)->select();
+//        dump($list);
+        $this->assign('a',$Page->firstRow+1);// 赋值数据集
+        $this->assign('user',$list);
+        $this->assign('page',$show);// 赋值分页输出
+        $this->display();
+    }
+
+    <style type="text/css">
+        .pages a,.pages span {
+            display:inline-block;
+            padding:2px 5px;
+            margin:0 1px;
+            border:1px solid #f0f0f0;
+            -webkit-border-radius:3px;
+            -moz-border-radius:3px;
+            border-radius:3px;
+        }
+        .pages a,.pages li {
+            display:inline-block;
+            list-style: none;
+            text-decoration:none; color:#58A0D3;
+        }
+        .pages a.first,.pages a.prev,.pages a.next,.pages a.end{
+            margin:0;
+        }
+        .pages a:hover{
+            border-color:#50A8E6;
+        }
+        .pages span.current{
+            background:#50A8E6;
+            color:#FFF;
+            font-weight:700;
+            border-color:#50A8E6;
+        }
+    </style>
+
+<div class="pages">{$page}</div>
+
+
+上传文件
+                $upload = new \Think\Upload();// 实例化上传类
+                $upload->maxSize   =     512000 ;// 设置附件上传大小
+                $upload->exts      =     array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
+        	//$upload->exts      =     array('mp4','wmv');// 视频
+                $upload->rootPath  =      './Public/'; // 设置附件上传根目录
+                $upload->savePath  =      'advertImg/'; // 设置附件上传（子）目录
+// 上传文件
+                $info   =   $upload->upload();
+                if(!$info) {// 上传错误提示错误信息
+                    $this->error($upload->getError());
+//                dump($upload->getError());
+                }else{// 上传成功 获取上传文件信息
+                    foreach($info as $file){
+                        $adverImg=$file['savepath'].$file['savename'];
+                    }
+                    $adverinfo=I('post.');
+//                dump($adverinfo);
+                    $adverinfo['adverimg']=$adverImg;
+                    $adverinfo['addtime']=time();
+                    if(M('guanggao')->create($adverinfo)){
+                        $result=M('guanggao')->where("id=$id")->save($adverinfo);
+                        if($result>0){
+                            $this->success('修改成功',U("advertList"));
+                        }
+        else{
+                $this->success("修改失败");
+            }
+        }
+    }
+

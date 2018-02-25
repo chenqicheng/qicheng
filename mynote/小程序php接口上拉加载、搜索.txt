@@ -1,0 +1,21 @@
+    function jobList(){
+        $job=M('jobinfo');
+        //上拉加载
+        $page=I('post.page')?I('post.page'):'';
+        $limit=$page?($page*10)-10:0;
+        //搜索
+        $searchjob=I('post.searchjob')?I('post.searchjob'):'';
+        $result=$job->field('id,jobname,peoplenum,paymoney,starttime,daynum,jobtype,address,addtime,status')->where("jobname LIKE '%$searchjob%' or jobtype LIKE '%$searchjob%'")->order('addtime desc')->limit("$limit,10")->select();
+//        dump($reault);
+        foreach($result as $key=>$value){
+//            dump('开始'.$value['starttime']."天数".$value['daynum']);
+            $stardata=$value['starttime'];
+            $daynum=$value['daynum']-1;
+            $end_data = date("Y-m-d",strtotime("$stardata +$daynum day"));
+            $result[$key]['endtime']=$end_data ;
+            $result[$key]['addtime']=date("Y-m-d",$value['addtime']);
+//            dump($end_data);
+        }
+//        dump($reault);
+        $this->ajaxReturn($result);
+    }

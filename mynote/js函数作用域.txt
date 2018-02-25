@@ -1,0 +1,18 @@
+ 1         var a=10;
+ 2         function aaa(){
+ 3             alert(a);//undefined，查找a的时候会现在函数内查找，由于预解析的作用，此时的a是undefined,因此永远不会去查找外面的10了 ;就近找var声明的变量
+ 4             var a = 20;
+ 5 
+ 6             /*预解析
+ 7             var a
+ 8             alert(a);
+ 9             var a = 20;*/
+10 
+11         }
+12         aaa();
+
+
+
+
+
+https://www.cnblogs.com/skylar/p/3986087.html

@@ -1,0 +1,10 @@
+    public function _initialize(){
+        if(empty($_SESSION['username'])){
+            echo "<script>top.location.href='".U('Index/index')."'</script>";
+        }
+    }
+
+
+$end_data = date("Y-m-d",strtotime("$stardata +$daynum day"));//加几天
+
+{$vo.adv_time|date='Y-m-d H:i:s',###} //thinkphp时间戳转为日期格式

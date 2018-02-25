@@ -1,0 +1,9 @@
+    //Õº∆¨‘§¿¿
+    $(".uploadimg").change(function(){
+        objurl=URL.createObjectURL($(".uploadimg")[0].files[0]);
+        $(".yulan")[0].src=objurl;
+        $(".yulan").parent().css({"display":"block"})
+    })
+
+∑µªÿ…œ“ª“≥
+onclick="javascript:history.go(-1);" 

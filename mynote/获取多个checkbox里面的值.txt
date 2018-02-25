@@ -1,0 +1,3 @@
+        $('.selasw:checked').each(function(){
+            alert($(this).val())
+        })

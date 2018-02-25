@@ -1,0 +1,10 @@
+			var files		=	$(this).get(0).files[0];//获取图片信息
+			var maxfilesize =	1024*1024*5;//最大文件大小设置为5M
+			if(files.size > maxfilesize){
+				layer.msg("文件大小最多只能5M,请重新上传");				
+				return false;
+			}
+			if(files.type != 'image/jpeg' && files.type != 'image/jpg' && files.type != 'image/gif' && files.type != 'image/png'){
+				layer.msg("文件类型只能是jpeg/jpg/gif/png类型");				
+				return false;			
+			}

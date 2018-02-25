@@ -1,0 +1,40 @@
+ 1.TP->convention
+    /* URL设置 */
+    'URL_MODEL'             =>  2
+2. apache
+   2.1 httpd.conf->开启rewrite模式
+       LoadModule rewrite_module modules/mod_rewrite.so
+   2.2  httpd.conf->开启httpd-vhosts扩展
+	Include conf/extra/httpd-vhosts.conf
+   2.3  httpd-vhosts
+	<VirtualHost *:80>
+    		ServerAdmin webmaster@dummy-host2.example.com
+    		DocumentRoot "D:\wamp\www\MyTP"
+    		ServerName test.fish.com
+    		ErrorLog "logs/dummy-host2.example.com-error.log"
+    		CustomLog "logs/dummy-host2.example.com-access.log" common
+	</VirtualHost>
+          
+3.127.0.0.1       test.fish.com
+
+define('BIND_MODULE', 'Home');
+
+
+
+//多配置一个项目端口  文件：httpd-vhosts
+<VirtualHost *:81>
+  ServerName web.localhost
+  DocumentRoot "E:\wamp\www\caisuikx"
+  <Directory  "E:\wamp\www\caisuikx">
+  Options Indexes FollowSymLinks      
+  AllowOverride All
+  Order allow,deny
+  Allow from all
+  </Directory>
+</VirtualHost>
+
+
+//文件:httpd.conf
+Listen [::0]:81  
+
+

@@ -1,0 +1,14 @@
+cd / 根目录
+cd /var/www/adminjianzhi 进入指定文件夹
+ls 查看当前文件夹下的文件
+ll 查看当前文件夹下的文件权限  r代表只读，w代表写，x代表可执行
+chmod -R 777 adminjianzhi //赋予文件夹所有权限
+
+
+mysql -u root -p 123456
+
+show databases;
+
+use student;
+
+show tables;
