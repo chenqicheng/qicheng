@@ -1,0 +1,256 @@
+一. 支付  http://www.php.cn/xiaochengxu-381906.html
+
+支付主要分为几个步骤：
+
+前端携带支付需要的数据(商品id，购买数量等)发起支付请求
+
+后端在接收到支付请求后，处理支付数据，然后携带处理后的数据请求 微信服务器 的 支付统一下单接口
+
+后端接收到上一步请求微信服务器的返回数据，再次处理，然后返回前端让前端可以开始支付。
+
+前端进行支付动作
+
+前端支付完成后，微信服务器会向后端发送支付通知（也就是微信要告诉你客户已经付过钱了），后端根据这个通知确定支付完成，然后就去做支付完成后的相应动作，比如修改订单状态，添加交易日志啊等等。
+
+从这几个步骤可以看出，后端主要的作用就是将支付需要的数据传给微信服务器，再根据微信服务器的响应确定支付是否完成。
+
+这个流程还是蛮容易理解的。形象的说，前端就是个顾客，后端就是店家，微信服务器的统一下单接口就像收银员。顾客跟店家说，我是谁谁谁，现在我要付多少多少钱给你买什么什么。店家就跟收银员说，那个谁谁谁要付多少钱，你准备收钱吧。收银员收到钱后，就去告诉店家，我已经收到钱了，你给他东西吧。
+下面就详细的说明一下各个步骤的具体实现。
+
+1. 前端请求支付
+
+前端请求支付，就是简单的携带支付需要的数据，例如用户标识，支付金额，支付订单 ID 等等跟 **你的业务逻辑有关** 或者跟 **下一步请求微信服务器支付统一下单接口需要的数据有关** 的相关数据，使用微信小程序的 wx.request( ) 去请求后端的支付接口。
+
+2. 后端请求微信服务器
+
+后端接收到前端发送的支付请求后，可以进行一下相关验证，例如判断一下用户有没有问题，支付金额对不对等等。
+
+在验证没什么问题，可以向微信服务器申请支付之后，后端需要使用 微信规定的数据格式 去请求微信的支付统一下单接口。
+
+微信规定的请求数据:
+
+这需要较多代码实现。因为需要的数据个数较多，而且还需要加密并以 XML 格式发送。
+首先，有以下数据是使用小程序支付必须提供给微信服务器的参数。
+
+小程序 appid。写小程序的大概没有不知道这个的。。。
+
+用户标识 openid。也就是用户的小程序标识，在我上篇博客中说明了如何获取。
+
+商户号 mch_id 。申请开通微信支付商户认证成功后微信发给你的邮件里有
+
+商户订单号 out_trade_no 。商户为这次支付生成的订单号
+
+总金额 total_fee 。订单总金额，很重要的一点是单位是分，要特别注意。
+
+微信服务器回调通知接口地址 notify_url。微信确认钱已经到账后，会往这个地址多次发送消息，告诉你顾客已经付完钱了，你需要返回消息给微信表示你已经收到了通知。。这个地址不能有端口号，同时要能直接接受POST方法请求。
+
+交易类型 trade_type 。微信小程序支付此值统一为 JSAPI
+
+商品信息 Body。类似"腾讯-游戏"这种格式
+
+终端IP地址 spbill_create_ip 。终端地址IP，也就是请求支付的 IP 地址。
+
+随机字符串 nonce_str 。需要后端随机生成的字符串用于保证数据安全。微信要求不长于32位。
+
+签名 sign 。使用上面的所有参数进行相应处理加密生成签名。（具体处理方式可见下文代码，可直接复用。）
+
+在处理好以上所有数据后，将这些数据以 XML 格式整理并以 POST 方法发送到 微信支付统一下单接口 https://api.mch.weixin.qq.com/pay/unifiedorder 。
+
+3.后端接受微信服务器返回数据
+
+微信服务器在接收到支付数据之后，如果数据没有问题，其会返回用于支付的相应数据，其中非常重要的是 名称为 prepay_id 的数据字段，需要将此数据返回前端，前端才能继续支付。
+
+因此，在后端接收到微信服务器的返回数据后，需要进行相应的处理，最终返回到前端如下数据：
+
+appid 不需多说
+
+timeStamp 当前时间戳
+
+nonceStr 随机字符串
+
+package 就是上面提到的 prepay_id，不过切记格式如 “prepay_id= prepay_id_item“。否则会导致错误。
+
+signType 加密方式，一般应该是 MD5
+
+paySign 对以上数据进行相应处理并加密。
+
+到这里，后端的支付接口已经完成了接收前端支付请求，并返回了前端支付所需数据的功能。
+
+4. 前端发起支付
+
+前端在接收到返回数据后，使用 wx.requestPayment() 来请求发起支付。此 API 需要的对象参数各项值就是我们上一步返回的各个数据。
+
+5.后端接受微信服务器回调
+
+前端完成支付后，微信服务器确认支付已经完成。就会向第一步中设置的回调地址发送通知。后端的接收回调接口在接收到通知后，就可以判断支付是否完成，从而决定后续动作。
+
+需要注意的是，在接收到微信服务器的回调通知后，根据通知的result_code字段判断支付是否成功。在接受到成功的通知后，后端需要返回success数据向微信服务器告知已得到回调通知。否则微信服务器会不停的向后端发送消息。另外微信的通知是以XML格式发送的，在接受处理时需要注意。
+
+微信的大概支付流程就是这样。以下是PHP语法的微信支付类，可以比照上面的步骤介绍，加深理解。在需要支付时，直接传入参数实例化此类再调用类的 pay 方法即可。
+
+
+
+//微信支付类
+class WeiXinPay{
+  //=======【基本信息设置】=====================================
+  //微信公众号身份的唯一标识
+  protected $APPID = appid;//填写您的appid。微信公众平台里的
+  protected $APPSECRET = secret;
+  //受理商ID，身份标识
+  protected $MCHID = '11111111';//商户id
+  //商户支付密钥Key
+  protected $KEY = '192006250b4c09247ec02edce69f6a2d';
+  //回调通知接口
+  protected $APPURL =   'https://smart.afei.com/receivesuc';
+  //交易类型
+  protected $TRADETYPE = 'JSAPI';
+  //商品类型信息
+  protected $BODY = 'wx/book';
+  //微信支付类的构造函数
+  function __construct($openid,$outTradeNo,$totalFee){
+    $this->openid = $openid; //用户唯一标识
+    $this->outTradeNo = $outTradeNo; //商品编号
+    $this->totalFee = $totalFee; //总价
+  }
+  //微信支付类向外暴露的支付接口
+  public function pay(){
+    $result = $this->weixinapp();
+    return $result;
+  }
+   //对微信统一下单接口返回的支付相关数据进行处理
+   private function weixinapp(){
+     $unifiedorder=$this->unifiedorder();
+     $parameters=array(
+     'appId'=>$this->APPID,//小程序ID
+     'timeStamp'=>''.time().'',//时间戳
+     'nonceStr'=>$this->createNoncestr(),//随机串
+     'package'=>'prepay_id='.$unifiedorder['prepay_id'],//数据包
+     'signType'=>'MD5'//签名方式
+       );
+     $parameters['paySign']=$this->getSign($parameters);
+     return $parameters;
+   }
+  /*
+   *请求微信统一下单接口
+   */
+  private function unifiedorder(){
+    $parameters = array(
+      'appid' => $this->APPID,//小程序id
+      'mch_id'=> $this->MCHID,//商户id
+      'spbill_create_ip'=>$_SERVER['REMOTE_ADDR'],//终端ip
+      'notify_url'=>$this->APPURL, //通知地址
+      'nonce_str'=> $this->createNoncestr(),//随机字符串
+      'out_trade_no'=>$this->outTradeNo,//商户订单编号
+      'total_fee'=>floatval($this->totalFee), //总金额
+      'open_id'=>$this->openid,//用户openid
+      'trade_type'=>$this->TRADETYPE,//交易类型
+      'body' =>$this->BODY, //商品信息
+    );
+    $parameters['sign'] = $this->getSign($parameters);
+    $xmlData = $this->arrayToXml($parameters);
+    $xml_result = $this->postXmlCurl($xmlData,'https://api.mch.weixin.qq.com/pay/unifiedorder',60);
+    $result = $this->xmlToArray($xml_result);
+    return $result;
+  }
+  //数组转字符串方法
+  protected function arrayToXml($arr){
+    $xml = "<xml>";
+    foreach ($arr as $key=>$val)
+    {
+      if (is_numeric($val)){
+        $xml.="<".$key.">".$val."</".$key.">";
+      }else{
+         $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
+      }
+    }
+    $xml.="</xml>";
+    return $xml;
+  }
+  protected function xmlToArray($xml){
+    $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+    return $array_data;
+  }
+  //发送xml请求方法
+  private static function postXmlCurl($xml, $url, $second = 30)
+  {
+    $ch = curl_init();
+    //设置超时
+    curl_setopt($ch, CURLOPT_TIMEOUT, $second);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); //严格校验
+    //设置header
+    curl_setopt($ch, CURLOPT_HEADER, FALSE);
+    //要求结果为字符串且输出到屏幕上
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    //post提交方式
+    curl_setopt($ch, CURLOPT_POST, TRUE);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 40);
+    set_time_limit(0);
+    //运行curl
+    $data = curl_exec($ch);
+    //返回结果
+    if ($data) {
+      curl_close($ch);
+      return $data;
+    } else {
+      $error = curl_errno($ch);
+      curl_close($ch);
+      throw new WxPayException("curl出错，错误码:$error");
+    }
+  }
+  /*
+   * 对要发送到微信统一下单接口的数据进行签名
+   */
+  protected function getSign($Obj){
+     foreach ($Obj as $k => $v){
+     $Parameters[$k] = $v;
+     }
+     //签名步骤一：按字典序排序参数
+     ksort($Parameters);
+     $String = $this->formatBizQueryParaMap($Parameters, false);
+     //签名步骤二：在string后加入KEY
+     $String = $String."&key=".$this->KEY;
+     //签名步骤三：MD5加密
+     $String = md5($String);
+     //签名步骤四：所有字符转为大写
+     $result_ = strtoupper($String);
+     return $result_;
+   }
+  /*
+   *排序并格式化参数方法，签名时需要使用
+   */
+  protected function formatBizQueryParaMap($paraMap, $urlencode)
+  {
+    $buff = "";
+    ksort($paraMap);
+    foreach ($paraMap as $k => $v)
+    {
+      if($urlencode)
+      {
+        $v = urlencode($v);
+      }
+      //$buff .= strtolower($k) . "=" . $v . "&";
+      $buff .= $k . "=" . $v . "&";
+    }
+    $reqPar;
+    if (strlen($buff) > 0)
+    {
+      $reqPar = substr($buff, 0, strlen($buff)-1);
+    }
+    return $reqPar;
+  }
+  /*
+   * 生成随机字符串方法
+   */
+  protected function createNoncestr($length = 32 ){
+     $chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+     $str ="";
+     for ( $i = 0; $i < $length; $i++ ) {
+     $str.= substr($chars, mt_rand(0, strlen($chars)-1), 1);
+     }
+     return $str;
+     }
+}
