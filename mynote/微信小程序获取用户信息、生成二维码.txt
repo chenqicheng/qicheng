@@ -1,16 +1,24 @@
-    //��¼�ӿڻ�ȡ�û���Ϣ
+    //登录接口获取用户信息 openid
     function getUserInfo(){
-        $appid=C("appid");
-        $secret=C("appsecret");
-        $js_code=I("post.js_code");
+        $appid=XCX_APPID;
+        $secret=XCX_APPSECRET;
+        $js_code=I("post.code");
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$js_code."&grant_type=authorization_code";
-        $res=file_get_contents($url);
-        $res=json_decode($res);
-        $this->ajaxReturn($res);
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 500);
+// 为保证第三方服务器与微信服务器之间数据传输的安全性，所有微信接口采用https方式调用，必须使用下面2行代码打开ssl安全校验。
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_URL, $url);
+        $res = curl_exec($curl);
+        curl_close($curl);
+        $json_obj = json_decode($res,true);
+        echo json_encode($json_obj);
     }
 
 
-    //����ע���ά������
+    //网红注册二维码生成
     function wanghongzhuce(){
         header("Content-Type: text/html;charset=utf-8");
         $url = "https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=";
