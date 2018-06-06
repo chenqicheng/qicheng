@@ -1,3 +1,6 @@
+
+https://jingyan.baidu.com/article/215817f7a10bfb1eda14238b.html  //配置lnmp
+
 http://blog.csdn.net/kesjc2017/article/details/76650845
 
 Centos7.3_64位安装Apache2.4_mysql5.7_php5.4(阿里云LAMP环境搭建图文教程)

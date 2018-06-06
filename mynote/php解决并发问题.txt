@@ -1,0 +1,80 @@
+对于商品抢购等并发场景下，可能会出现超卖的现象，这时就需要解决并发所带来的这些问题了
+
+在PHP语言中并没有原生的提供并发的解决方案，因此就需要借助其他方式来实现并发控制。
+
+方案一：使用文件锁排它锁
+
+flock函数用于获取文件的锁，这个锁同时只能被一个线程获取到，其它没有获取到锁的线程要么阻塞，要么获取失败
+
+在获取到锁的时候，先查询库存，如果库存大于0，则进行下订单操作，减库存，然后释放锁
+
+
+
+方案二：使用Mysql数据库提供的悲观锁
+
+Innodb存储引擎支持行级锁，当某行数据被锁定时，其他进程不能对这行数据进行操作
+
+先查询并锁定行：select stock_num from table where id=1 for update
+
+if(stock_num > 0){
+
+//下订单
+
+update table set stock_num=stock-1 where id=1
+
+}
+
+
+
+方案三：使用队列
+
+将用户的下单请求依次存入一个队列中，后台用一个单独的进程处理队列中的下单请求
+
+
+
+方案四：使用Redis
+
+redis的操作都是原子性的，可以将商品的库存存入redis中，下单之前对库存进行decr操作，如果返回的值大于等于0等可以下单，否则不能下单,这种方式效率较高
+
+if(redis->get('stock_num') > 0){
+
+ stock_num = redis->decr('stock_num')
+
+ if(stock_num >= 0){
+
+ //下订单
+
+ }else{
+
+ //库存不足
+
+ }
+
+}else{
+
+//库存不足
+
+}
+
+
+
+其他并发问题：
+
+在现实应用中，很多情况下会把数据存入缓存，当缓存失效时，去数据库取数据并重新设置缓存，如果这时并发量很大，会有很多进程同时去数据库取数据，导致很多请求
+
+穿透到数据库，而使数据库奔溃，这里可用文件锁来解决
+
+[php] view plain copy
+$data = $cache->get('key');  
+if(!$data){  
+    $fp = fopen('lockfile');  
+    if(flock($fp, LOCK_EX)){  
+        $data = $cache->get('key');//拿到锁后再次检查缓存，这时可能已经有了  
+        if(!$data){  
+            $data = mysql->query();  
+            $cache->set('key', $data);  
+        }  
+        flock($fp, LOCK_UN);  
+    }  
+    fclose($fp);  
+}  

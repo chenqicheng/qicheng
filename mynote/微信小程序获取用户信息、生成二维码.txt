@@ -1,4 +1,4 @@
-    //ç™»å½•æ¥å£è·å–ç”¨æˆ·ä¿¡æ¯ openid
+    //µÇÂ¼½Ó¿Ú»ñÈ¡ÓÃ»§ĞÅÏ¢ openid
     function getUserInfo(){
         $appid=XCX_APPID;
         $secret=XCX_APPSECRET;
@@ -7,7 +7,7 @@
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_TIMEOUT, 500);
-// ä¸ºä¿è¯ç¬¬ä¸‰æ–¹æœåŠ¡å™¨ä¸å¾®ä¿¡æœåŠ¡å™¨ä¹‹é—´æ•°æ®ä¼ è¾“çš„å®‰å…¨æ€§ï¼Œæ‰€æœ‰å¾®ä¿¡æ¥å£é‡‡ç”¨httpsæ–¹å¼è°ƒç”¨ï¼Œå¿…é¡»ä½¿ç”¨ä¸‹é¢2è¡Œä»£ç æ‰“å¼€sslå®‰å…¨æ ¡éªŒã€‚
+// Îª±£Ö¤µÚÈı·½·şÎñÆ÷ÓëÎ¢ĞÅ·şÎñÆ÷Ö®¼äÊı¾İ´«ÊäµÄ°²È«ĞÔ£¬ËùÓĞÎ¢ĞÅ½Ó¿Ú²ÉÓÃhttps·½Ê½µ÷ÓÃ£¬±ØĞëÊ¹ÓÃÏÂÃæ2ĞĞ´úÂë´ò¿ªssl°²È«Ğ£Ñé¡£
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -18,7 +18,7 @@
     }
 
 
-    //ç½‘çº¢æ³¨å†ŒäºŒç»´ç ç”Ÿæˆ
+    //Íøºì×¢²á¶şÎ¬ÂëÉú³É
     function wanghongzhuce(){
         header("Content-Type: text/html;charset=utf-8");
         $url = "https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=";

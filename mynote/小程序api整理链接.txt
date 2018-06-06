@@ -1,0 +1,28 @@
+https://blog.csdn.net/bobobocai/article/details/77651566?locationNum=5&fps=1
+
+
+
+    /* 发送json格式的数据，到api接口 -xzz0704  */
+    function https_curl_json($url,$data,$type){
+        if($type=='json'){//json $_POST=json_decode(file_get_contents('php://input'), TRUE);
+            $headers = array("Content-type: application/json;charset=UTF-8","Accept: application/json","Cache-Control: no-cache", "Pragma: no-cache");
+            $data=json_encode($data);
+        }
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_POST, 1); // 发送一个常规的Post请求
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        if (!empty($data)){
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS,$data);
+        }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers );
+        $output = curl_exec($curl);
+        if (curl_errno($curl)) {
+            echo 'Errno'.curl_error($curl);//捕抓异常
+        }
+        curl_close($curl);
+        return $output;
+    }

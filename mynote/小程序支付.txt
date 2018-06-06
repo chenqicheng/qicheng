@@ -1,5 +1,7 @@
 一. 支付  http://www.php.cn/xiaochengxu-381906.html
 
+http://cw.hubwiz.com/card/c/57303d5408ce8b3d3a14369e/1/4/7/   //支付回调讲解
+
 支付主要分为几个步骤：
 
 前端携带支付需要的数据(商品id，购买数量等)发起支付请求

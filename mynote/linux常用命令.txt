@@ -12,3 +12,9 @@ show databases;
 use student;
 
 show tables;
+
+
+重启nginx服务器,查看配置是否成功
+
+service nginx stop && service nginx start
+
